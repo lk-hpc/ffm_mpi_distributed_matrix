@@ -8,21 +8,34 @@ import java.util.Optional;
 
 public class IntMatrixCalculator implements IIntMatrixCalculator {
 
-    private static final String LIBRARY_REL_PATH = "/src/main/cpp/build/libSimpleLib.so";
+    private static final String LIBRARY_REL_PATH = "/src/main/cpp/build/libSimpleLib";
     private static final String PROPERTY_KEY = "user.dir";
     public static final String CONSTRUCTOR_NAME = "newIntMatrixCalculator";
     private final Linker linker;
     private final String currentDirectory;
+    private final String libraryRelPath;
+
+    private String determineLibraryPath() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("mac")) {
+            return LIBRARY_REL_PATH + ".dylib";
+        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("mac")) {
+            return LIBRARY_REL_PATH + ".so";
+        } else {
+            throw new UnsupportedOperationException("Unsupported operating system: " + osName);
+        }
+    }
 
     public IntMatrixCalculator() {
         this.linker = Linker.nativeLinker();
         this.currentDirectory = System.getProperty(PROPERTY_KEY);
+        this.libraryRelPath = determineLibraryPath();
     }
 
     private int calculate(FUNCTION_NAMES funcName) {
         try (Arena arena = Arena.ofConfined()) {
             // Obtain an instance of the native linker
-            SymbolLookup lookup = SymbolLookup.libraryLookup(Path.of(currentDirectory + LIBRARY_REL_PATH), arena);
+            SymbolLookup lookup = SymbolLookup.libraryLookup(Path.of(currentDirectory + libraryRelPath), arena);
 
             Optional<MemorySegment> constructorAddr = lookup.find(CONSTRUCTOR_NAME);
             Optional<MemorySegment> funcAddr = lookup.find(funcName.getNativeFuncName());
