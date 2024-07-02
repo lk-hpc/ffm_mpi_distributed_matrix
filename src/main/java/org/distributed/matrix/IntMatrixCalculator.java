@@ -27,7 +27,7 @@ public class IntMatrixCalculator implements IIntMatrixCalculator {
             Matrix matrixA = new Matrix(Path.of("src/main/java/resources/matrixA.csv"), arena);
             Matrix matrixB = new Matrix(Path.of("src/main/java/resources/matrixB.csv"), arena);
 
-            MemorySegment resultMemorySegment = Matrix.getResultMemorySegment(matrixA.getNumberOfRows(), matrixB.getNumberOfColumns(), arena);
+            MemorySegment resultMemorySegment = Matrix.createResultMemorySegment(matrixA.getNumberOfRows(), matrixB.getNumberOfColumns(), arena);
 
             // ToDo : To Delete. This is just for Testing
             readFromMemorySegment(matrixA.getMemorySegment());

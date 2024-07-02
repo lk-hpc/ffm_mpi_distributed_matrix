@@ -44,7 +44,7 @@ public class Matrix {
         return memorySegment;
     }
 
-    public static MemorySegment getResultMemorySegment(int numberOfRows, int numberOfColumns, Arena arena) {
+    public static MemorySegment createResultMemorySegment(int numberOfRows, int numberOfColumns, Arena arena) {
         long sizeInBytes = numberOfRows * numberOfColumns * ValueLayout.JAVA_LONG.byteSize() + 2 * ValueLayout.JAVA_INT.byteSize();
         MemorySegment segment = arena.allocate(sizeInBytes);
 
