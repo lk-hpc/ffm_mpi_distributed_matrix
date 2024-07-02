@@ -29,9 +29,6 @@ public class IntMatrixCalculator implements IIntMatrixCalculator {
 
             MemorySegment resultMemorySegment = Matrix.createResultMemorySegment(matrixA.getNumberOfRows(), matrixB.getNumberOfColumns(), arena);
 
-            // ToDo : To Delete. This is just for Testing
-            readFromMemorySegment(matrixA.getMemorySegment());
-
             // Obtain an instance of the native linker
             SymbolLookup lookup = SymbolLookup.libraryLookup(Path.of(currentDirectory + LIBRARY_REL_PATH), arena);
 
@@ -51,19 +48,26 @@ public class IntMatrixCalculator implements IIntMatrixCalculator {
 
             this.linker.downcallHandle(constructorMemorySegment, newIntCalculator);
             MethodHandle functionHandle = this.linker.downcallHandle(functionMemorySegment, funcDesc);
-            return (int) functionHandle.invokeExact(
+            int exitCode = (int) functionHandle.invokeExact(
                     constructorMemorySegment,
                     matrixA.getAddress(),
                     matrixA.getByteSize(),
                     matrixB.getAddress(),
                     matrixB.getByteSize(),
                     resultMemorySegment.address());
+
+            if (exitCode == 0) {
+                System.out.println("Result Matrix :");
+                readFromMemorySegment(resultMemorySegment);
+            }
+
+            return exitCode;
+
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
 
-    // ToDo : To Delete. This is just for Testing
     private static void readFromMemorySegment(MemorySegment memorySegment) {
         // Reading back the values from the memory segment (for demonstration)
         int numberOfRows = memorySegment.get(ValueLayout.JAVA_INT, 0);
