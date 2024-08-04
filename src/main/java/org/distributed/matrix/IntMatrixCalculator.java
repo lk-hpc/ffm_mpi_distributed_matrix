@@ -1,6 +1,7 @@
 package org.distributed.matrix;
 
 import org.distributed.matrix.matrix.Matrix;
+import org.distributed.matrix.utils.OsUtils;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -10,7 +11,7 @@ import java.lang.foreign.ValueLayout;
 
 public class IntMatrixCalculator implements IIntMatrixCalculator {
 
-    private static final String LIBRARY_REL_PATH = "/src/main/cpp/build/libSimpleLib.so";
+    private static final String LIBRARY_REL_PATH = "/src/main/cpp/build/libSimpleLib";
     private static final String PROPERTY_KEY = "user.dir";
     public static final String CONSTRUCTOR_NAME = "newIntMatrixCalculator";
     private final Linker linker;
@@ -23,14 +24,14 @@ public class IntMatrixCalculator implements IIntMatrixCalculator {
 
     public int calculate() {
         try (Arena arena = Arena.ofConfined()) {
-
             Matrix matrixA = new Matrix(Path.of("src/main/java/resources/matrixA.csv"), arena);
             Matrix matrixB = new Matrix(Path.of("src/main/java/resources/matrixB.csv"), arena);
 
             MemorySegment resultMemorySegment = Matrix.createResultMemorySegment(matrixA.getNumberOfRows(), matrixB.getNumberOfColumns(), arena);
 
             // Obtain an instance of the native linker
-            SymbolLookup lookup = SymbolLookup.libraryLookup(Path.of(currentDirectory + LIBRARY_REL_PATH), arena);
+            var libraryType = OsUtils.getExtension();
+            SymbolLookup lookup = SymbolLookup.libraryLookup(Path.of(currentDirectory + LIBRARY_REL_PATH + libraryType), arena);
 
             MemorySegment constructorMemorySegment = lookup.find(CONSTRUCTOR_NAME).orElseThrow();
             MemorySegment functionMemorySegment = lookup.find(FUNCTION_NAMES.MULTIPLY.getNativeFuncName()).orElseThrow();
